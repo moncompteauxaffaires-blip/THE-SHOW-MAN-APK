@@ -6,7 +6,840 @@ THE SHOW MAN
 # 🎤 THE SHOW MAN
 
 Jeu vidéo de comédie utilisant l'intelligence 
+<!DOCTYPE html>
+<html lang="fr" class="dark h-full">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Showman Comedy Club - Le Jeu du Comédien</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Canvas Confetti Library -->
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        stageRed: '#881337',
+                        curtainRed: '#be123c',
+                        neonYellow: '#fde047',
+                        neonPink: '#f43f5e',
+                        neonCyan: '#06b6d4',
+                        goldStar: '#fbbf24'
+                    },
+                    animation: {
+                        'spotlight-left': 'spotlightMoveLeft 6s ease-in-out infinite alternate',
+                        'spotlight-right': 'spotlightMoveRight 7s ease-in-out infinite alternate',
+                        'curtain-bounce': 'curtainBounce 3s ease-in-out infinite alternate',
+                        'float-up': 'floatUp 2.2s ease-out forwards',
+                        'mic-bounce': 'micBounce 0.6s ease-in-out infinite alternate',
+                        'curtain-open': 'curtainOpen 1.2s forwards ease-in-out'
+                    },
+                    keyframes: {
+                        spotlightMoveLeft: {
+                            '0%': { transform: 'rotate(-22deg)' },
+                            '100%': { transform: 'rotate(12deg)' }
+                        },
+                        spotlightMoveRight: {
+                            '0%': { transform: 'rotate(20deg)' },
+                            '100%': { transform: 'rotate(-15deg)' }
+                        },
+                        floatUp: {
+                            '0%': { opacity: '0', transform: 'translateY(15px) scale(0.6)' },
+                            '25%': { opacity: '1', transform: 'translateY(-10px) scale(1.15)' },
+                            '80%': { opacity: '1', transform: 'translateY(-50px) scale(1)' },
+                            '100%': { opacity: '0', transform: 'translateY(-80px) scale(0.8)' }
+                        },
+                        micBounce: {
+                            '0%': { transform: 'translateY(0px)' },
+                            '100%': { transform: 'translateY(-4px)' }
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Fredoka+One&family=Outfit:wght@300;400;600;800;900&display=swap');
+        
+        body {
+            font-family: 'Outfit', sans-serif;
+            background-color: #050508;
+            color: #f3f4f6;
+            overflow-x: hidden;
+        }
 
+        .font-headline {
+            font-family: 'Fredoka One', cursive;
+        }
+
+        /* Velour Curtain Visual Effects */
+        .curtain-panel {
+            background: linear-gradient(90deg, #4c0519 0%, #881337 25%, #9f1239 50%, #881337 75%, #4c0519 100%);
+            box-shadow: inset 0 0 30px rgba(0,0,0,0.8);
+        }
+
+        /* Stage Floor Lighting */
+        .stage-floor-gradient {
+            background: radial-gradient(ellipse at center bottom, #312e81 0%, #0f172a 65%, #020617 100%);
+            border-top: 4px solid #f43f5e;
+            box-shadow: 0 -15px 30px rgba(244, 63, 94, 0.25);
+        }
+
+        /* Spotlight Beams */
+        .spotlight-beam-1 {
+            background: linear-gradient(180deg, rgba(254, 240, 138, 0.35) 0%, rgba(244, 63, 94, 0.08) 60%, transparent 100%);
+            clip-path: polygon(40% 0%, 60% 0%, 100% 100%, 0% 100%);
+            transform-origin: top center;
+        }
+
+        .spotlight-beam-2 {
+            background: linear-gradient(180deg, rgba(6, 182, 212, 0.35) 0%, rgba(168, 85, 247, 0.08) 60%, transparent 100%);
+            clip-path: polygon(40% 0%, 60% 0%, 100% 100%, 0% 100%);
+            transform-origin: top center;
+        }
+
+        /* Neon Glows */
+        .neon-glow-pink {
+            text-shadow: 0 0 8px #f43f5e, 0 0 20px #f43f5e, 0 0 35px #be123c;
+        }
+        .neon-glow-yellow {
+            text-shadow: 0 0 8px #fde047, 0 0 20px #fde047, 0 0 35px #ca8a04;
+        }
+
+        /* Smooth Canvas Transitions */
+        .custom-scrollbar::-webkit-scrollbar {
+            width: 6px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-track {
+            background: #0f172a;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+            background: #e11d48;
+            border-radius: 4px;
+        }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col justify-between selection:bg-rose-500 selection:text-white">
+
+    <!-- Header Navigation -->
+    <header class="border-b border-rose-900/40 bg-black/80 backdrop-blur-md sticky top-0 z-50">
+        <div class="max-w-6xl mx-auto px-4 py-3 flex items-center justify-between">
+            <div class="flex items-center space-x-3">
+                <div class="w-10 h-10 rounded-2xl bg-gradient-to-tr from-rose-600 via-pink-500 to-amber-400 flex items-center justify-center shadow-lg shadow-rose-600/30">
+                    <i class="fa-solid fa-microphone-lines text-white text-xl"></i>
+                </div>
+                <div>
+                    <h1 class="font-headline text-2xl tracking-wide bg-clip-text text-transparent bg-gradient-to-r from-amber-300 via-rose-400 to-cyan-300">
+                        LE SHOWMAN <span class="text-xs px-2 py-0.5 rounded-full bg-rose-950 text-rose-300 border border-rose-600/40 font-sans uppercase">IA Club</span>
+                    </h1>
+                </div>
+            </div>
+
+            <!-- Stats Bar -->
+            <div class="flex items-center space-x-3 bg-slate-900/90 px-4 py-1.5 rounded-full border border-rose-500/30 text-xs sm:text-sm">
+                <div class="flex items-center space-x-1.5" title="Spectacles Joués">
+                    <i class="fa-solid fa-masks-theater text-rose-400"></i>
+                    <span class="text-slate-400 hidden sm:inline">Shows:</span>
+                    <span id="stat-shows" class="font-bold text-white">0</span>
+                </div>
+                <div class="h-4 w-[1px] bg-slate-700"></div>
+                <div class="flex items-center space-x-1.5" title="Meilleure Note">
+                    <i class="fa-solid fa-star text-amber-400"></i>
+                    <span class="text-slate-400 hidden sm:inline">Record:</span>
+                    <span id="stat-best" class="font-bold text-amber-300">0.0/10</span>
+                </div>
+                <div class="h-4 w-[1px] bg-slate-700"></div>
+                <div class="flex items-center space-x-1.5" title="Total Rires">
+                    <i class="fa-solid fa-face-laugh-squint text-cyan-400"></i>
+                    <span class="text-slate-400 hidden sm:inline">Rires:</span>
+                    <span id="stat-laughs" class="font-bold text-cyan-300">0</span>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Interactive Stage Container -->
+    <main class="max-w-6xl mx-auto px-3 sm:px-4 py-4 w-full flex-grow flex flex-col justify-between">
+        
+        <!-- THE SHOWMAN STAGE -->
+        <div class="relative w-full h-[360px] sm:h-[420px] rounded-3xl overflow-hidden border-2 border-rose-600/40 shadow-[0_0_50px_rgba(136,19,55,0.4)] bg-slate-950 flex flex-col justify-end">
+            
+            <!-- Red Velour Left & Right Curtains -->
+            <div class="curtain-panel absolute top-0 left-0 bottom-0 w-12 sm:w-20 z-20 border-r border-rose-950/60"></div>
+            <div class="curtain-panel absolute top-0 right-0 bottom-0 w-12 sm:w-20 z-20 border-l border-rose-950/60"></div>
+            <!-- Top Curtain Valance -->
+            <div class="curtain-panel absolute top-0 inset-x-0 h-10 sm:h-12 z-20 border-b border-rose-950/80 rounded-b-xl flex justify-around items-center px-4">
+                <div class="w-16 h-4 bg-rose-950/40 rounded-full"></div>
+                <div class="w-24 h-4 bg-rose-950/40 rounded-full"></div>
+                <div class="w-16 h-4 bg-rose-950/40 rounded-full"></div>
+            </div>
+
+            <!-- Stage Background Lights -->
+            <div class="absolute inset-0 bg-gradient-to-b from-rose-950/30 via-slate-950 to-slate-950"></div>
+            
+            <!-- Neon Sign in Stage Backdrop -->
+            <div class="absolute top-14 inset-x-0 flex justify-center z-10">
+                <div class="border-2 border-amber-400/50 bg-black/50 px-6 py-1 rounded-xl backdrop-blur-md shadow-[0_0_25px_rgba(251,191,36,0.25)]">
+                    <span class="font-headline text-amber-300 tracking-widest text-lg sm:text-xl neon-glow-yellow uppercase">★ STAND-UP SHOWMAN ★</span>
+                </div>
+            </div>
+
+            <!-- Animated Spotlights -->
+            <div class="spotlight-beam-1 absolute -top-10 left-1/4 w-72 sm:w-96 h-[400px] pointer-events-none animate-spotlight-left z-10 opacity-70"></div>
+            <div class="spotlight-beam-2 absolute -top-10 right-1/4 w-72 sm:w-96 h-[400px] pointer-events-none animate-spotlight-right z-10 opacity-70"></div>
+
+            <!-- Floating Reaction Bubbles & Emojis Container -->
+            <div id="reactions-container" class="absolute inset-0 pointer-events-none z-30 overflow-hidden"></div>
+
+            <!-- Center Stage: Showman Avatar & Mic Stand -->
+            <div class="relative z-20 flex flex-col items-center justify-end mb-6">
+                
+                <!-- Prompter Speech Bubble -->
+                <div id="prompter-bubble" class="mb-3 max-w-xl w-11/12 bg-slate-900/95 border-2 border-amber-400/70 text-slate-100 p-4 rounded-2xl shadow-[0_0_30px_rgba(251,191,36,0.3)] text-center relative transition-all duration-300 min-h-[90px] flex flex-col justify-center items-center">
+                    <p id="prompter-text" class="text-base sm:text-lg font-semibold leading-relaxed italic text-amber-100">
+                        "Bienvenue au Comedy Club ! Configurez votre style et votre thème puis montez sur scène !"
+                    </p>
+                    <div id="typing-indicator" class="hidden text-xs text-amber-400 mt-2 font-mono flex items-center justify-center space-x-1.5">
+                        <span class="w-2 h-2 bg-amber-400 rounded-full animate-ping"></span>
+                        <span>L'IA prépare vos répliques...</span>
+                    </div>
+                    <!-- Speech Bubble Tail -->
+                    <div class="absolute -bottom-3 left-1/2 -translate-x-1/2 w-0 h-0 border-l-[10px] border-l-transparent border-r-[10px] border-r-transparent border-t-[12px] border-t-amber-400"></div>
+                </div>
+
+                <!-- Showman Character SVG & Mic Stand -->
+                <div id="showman-character" class="relative transition-transform duration-300">
+                    <svg class="w-32 h-32 sm:w-40 sm:h-40 drop-shadow-[0_0_15px_rgba(244,63,94,0.5)]" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <!-- Costume Jacket -->
+                        <path id="showman-suit" d="M22 88 C22 62 34 56 50 56 C66 56 78 62 78 88 Z" fill="#be123c"/>
+                        <!-- Gold Lapels & Bowtie -->
+                        <path d="M36 56 L50 82 L64 56" fill="#fbbf24" opacity="0.9"/>
+                        <!-- Shirt -->
+                        <path d="M42 56 L50 70 L58 56 Z" fill="#ffffff"/>
+                        <!-- Red Bowtie -->
+                        <polygon points="46,57 54,57 52,61 54,65 46,65 48,61" fill="#991b1b"/>
+                        
+                        <!-- Head -->
+                        <circle cx="50" cy="36" r="17" fill="#fde047"/>
+                        <!-- Cool Showman Glasses -->
+                        <rect x="37" y="31" width="11" height="8" rx="2" fill="#0f172a"/>
+                        <rect x="52" y="31" width="11" height="8" rx="2" fill="#0f172a"/>
+                        <line x1="48" y1="35" x2="52" y2="35" stroke="#0f172a" stroke-width="2"/>
+                        <!-- Expressive Mouth -->
+                        <path id="showman-mouth" d="M41 44 Q50 52 59 44" stroke="#991b1b" stroke-width="3" stroke-linecap="round" fill="none"/>
+                        
+                        <!-- Vintage Mic Stand -->
+                        <rect x="49" y="48" width="2" height="42" fill="#94a3b8"/>
+                        <circle cx="50" cy="90" r="8" fill="#475569"/>
+                        <!-- Metallic Mic Head -->
+                        <ellipse cx="50" cy="46" rx="4" ry="6" fill="#cbd5e1" stroke="#475569" stroke-width="1.5"/>
+                    </svg>
+                </div>
+            </div>
+
+            <!-- Stage Floor Gradient -->
+            <div class="stage-floor-gradient h-10 w-full relative z-10 flex items-center justify-center">
+                <div class="w-full max-w-sm h-1 bg-rose-500/30 rounded-full blur-sm"></div>
+            </div>
+
+            <!-- Audience Silhouettes Foreground -->
+            <div class="absolute bottom-0 inset-x-0 h-16 z-20 pointer-events-none opacity-90 flex justify-between items-end">
+                <svg class="w-full h-14 text-slate-950" viewBox="0 0 1000 100" preserveAspectRatio="none" fill="currentColor">
+                    <path d="M0 100 C 15 55, 35 55, 50 100 C 70 45, 100 45, 120 100 C 140 65, 170 65, 190 100 C 220 35, 260 35, 290 100 C 320 55, 360 55, 390 100 C 430 45, 470 45, 510 100 C 550 55, 590 55, 630 100 C 670 35, 710 35, 750 100 C 790 55, 830 55, 870 100 C 910 45, 950 45, 1000 100 Z"/>
+                </svg>
+            </div>
+        </div>
+
+        <!-- CONTROL PANEL & GAMEPLAY LOOP -->
+        <div class="mt-4 bg-slate-900/90 border border-rose-500/30 rounded-3xl p-5 shadow-2xl backdrop-blur-md">
+            
+            <!-- 1. SETUP PANEL (Before Show) -->
+            <div id="setup-panel" class="space-y-4">
+                <div class="flex items-center justify-between border-b border-slate-800 pb-3">
+                    <h2 class="font-headline text-xl text-rose-300 flex items-center gap-2">
+                        <i class="fa-solid fa-sliders text-amber-400"></i> Configuration du Showman
+                    </h2>
+                    <span class="text-xs text-slate-400">Généré par IA & Moteur Comédie</span>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <!-- Theme Selection -->
+                    <div>
+                        <label class="block text-xs uppercase tracking-wider text-slate-400 mb-2 font-bold">
+                            1. Sujet / Thème
+                        </label>
+                        <select id="select-theme" class="w-full bg-slate-950 border border-rose-500/40 rounded-xl px-3 py-2.5 text-sm text-white focus:outline-none focus:border-amber-400">
+                            <option value="L'Intelligence Artificielle et le Futur">🤖 IA & Futur Dystopique</option>
+                            <option value="Les Rendez-vous Amoureux et Tinder">💘 Les Rendez-vous Amoureux</option>
+                            <option value="Le Télétravail et les Réunions Zoom">💼 Le Télétravail & Le Bureau</option>
+                            <option value="Les Beaux-Parents et la Belle-Famille">💍 La Belle-Famille & Le Mariage</option>
+                            <option value="La Technologie et les Smartphones">📱 La Dépendance aux Ecrans</option>
+                            <option value="La Vie de Couple au Quotidien">👩‍❤️‍👨 La Vie de Couple</option>
+                        </select>
+                    </div>
+
+                    <!-- Humor Style Selection -->
+                    <div>
+                        <label class="block text-xs uppercase tracking-wider text-slate-400 mb-2 font-bold">
+                            2. Style d'Humour
+                        </label>
+                        <select id="select-style" class="w-full bg-slate-950 border border-rose-500/40 rounded-xl px-3 py-2.5 text-sm text-white focus:outline-none focus:border-amber-400">
+                            <option value="Absurde et Décalé">🤪 Absurde & Décalé</option>
+                            <option value="Sarcastique et Piquant">😼 Sarcastique & Piquant</option>
+                            <option value="Énergie Explosive">💥 Énergie Explosive</option>
+                            <option value="Autodérision Vache">😅 Autodérision</option>
+                            <option value="Philosophe du Quotidien">🧐 Philosophe Social</option>
+                        </select>
+                    </div>
+
+                    <!-- Showman Attitude -->
+                    <div>
+                        <label class="block text-xs uppercase tracking-wider text-slate-400 mb-2 font-bold">
+                            3. Attitude sur Scène
+                        </label>
+                        <select id="select-attitude" class="w-full bg-slate-950 border border-rose-500/40 rounded-xl px-3 py-2.5 text-sm text-white focus:outline-none focus:border-amber-400">
+                            <option value="Survolté & Exubérant">🔥 Survolté & Exubérant</option>
+                            <option value="Intime & Confident">🤫 Intime & Confident</option>
+                            <option value="Théâtral & Dramatique">🎭 Théâtral & Dramatique</option>
+                        </select>
+                    </div>
+                </div>
+
+                <!-- Custom Keyword Input -->
+                <div>
+                    <label class="block text-xs uppercase tracking-wider text-slate-400 mb-1 font-bold">
+                        Détail ou mot-clé spécifique (Optionnel)
+                    </label>
+                    <input type="text" id="input-custom" placeholder="Ex: Les aspirateurs robots, les réunions du lundi à 8h..." 
+                           class="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-2 text-sm text-slate-200 placeholder-slate-600 focus:outline-none focus:border-rose-500">
+                </div>
+
+                <!-- Start Button -->
+                <button id="btn-start" onclick="startShowmanPerformance()" 
+                        class="w-full py-3.5 rounded-2xl bg-gradient-to-r from-rose-600 via-pink-600 to-amber-500 hover:from-rose-500 hover:to-amber-400 text-white font-headline text-xl tracking-wider shadow-xl shadow-rose-600/30 transform active:scale-[0.99] transition-all flex items-center justify-center space-x-3">
+                    <i class="fa-solid fa-microphone font-headline text-2xl"></i>
+                    <span>MONTER SUR SCÈNE !</span>
+                </button>
+            </div>
+
+            <!-- 2. PERFORMANCE PANEL (During Show) -->
+            <div id="performance-panel" class="hidden space-y-4">
+                <div class="flex items-center justify-between border-b border-slate-800 pb-2">
+                    <div class="flex items-center space-x-2">
+                        <span class="relative flex h-3 w-3">
+                          <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-rose-400 opacity-75"></span>
+                          <span class="relative inline-flex rounded-full h-3 w-3 bg-rose-500"></span>
+                        </span>
+                        <span class="font-headline text-lg text-rose-400">EN DIRECT SUR SCÈNE</span>
+                    </div>
+                    <span id="joke-counter" class="text-xs bg-rose-950 border border-rose-500/40 text-rose-300 px-3 py-1 rounded-full font-mono">
+                        Vanne 1 / 3
+                    </span>
+                </div>
+
+                <!-- Audience Reaction Meter -->
+                <div>
+                    <div class="flex justify-between text-xs text-slate-400 mb-1 font-semibold">
+                        <span>Ambiance du Public</span>
+                        <span id="laugh-meter-text" class="text-amber-400 font-bold">En attente de la punchline...</span>
+                    </div>
+                    <div class="w-full bg-slate-950 h-3 rounded-full overflow-hidden border border-slate-800 p-0.5">
+                        <div id="laugh-meter-bar" class="bg-gradient-to-r from-amber-500 via-rose-500 to-cyan-400 h-full w-20 rounded-full transition-all duration-500"></div>
+                    </div>
+                </div>
+
+                <!-- Interactive Delivery Style Selector for Current Joke -->
+                <div id="delivery-choices-container" class="space-y-2">
+                    <span class="text-xs uppercase tracking-wider text-slate-400 font-bold block">
+                        Choisissez comment envoyer la punchline :
+                    </span>
+                    <div class="grid grid-cols-1 sm:grid-cols-3 gap-2">
+                        <button onclick="deliverPunchline('cash')" id="btn-delivery-1" class="p-2.5 rounded-xl bg-slate-950 hover:bg-rose-950/60 border border-slate-800 hover:border-rose-500/60 text-xs text-left transition-all">
+                            <span class="font-bold text-amber-300 block mb-0.5">⚡ Cash & Direct</span>
+                            <span class="text-slate-400">Impact immédiat et dynamique</span>
+                        </button>
+                        <button onclick="deliverPunchline('pause')" id="btn-delivery-2" class="p-2.5 rounded-xl bg-slate-950 hover:bg-rose-950/60 border border-slate-800 hover:border-rose-500/60 text-xs text-left transition-all">
+                            <span class="font-bold text-cyan-300 block mb-0.5">🤫 Silence Dramatique</span>
+                            <span class="text-slate-400">Créer l'attente et le suspense</span>
+                        </button>
+                        <button onclick="deliverPunchline('improv')" id="btn-delivery-3" class="p-2.5 rounded-xl bg-slate-950 hover:bg-rose-950/60 border border-slate-800 hover:border-rose-500/60 text-xs text-left transition-all">
+                            <span class="font-bold text-pink-300 block mb-0.5">🎭 Complice Public</span>
+                            <span class="text-slate-400">Mimer et prendre à partie la salle</span>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Next Button -->
+                <button id="btn-next-step" onclick="proceedToNextJoke()" disabled
+                        class="w-full py-3 rounded-xl bg-slate-800 disabled:opacity-40 disabled:cursor-not-allowed text-white font-bold flex items-center justify-center space-x-2 transition-all">
+                    <span>Enchaîner la suite du sketch</span>
+                    <i class="fa-solid fa-arrow-right"></i>
+                </button>
+            </div>
+
+            <!-- 3. EVALUATION SCORECARD PANEL (End of Show) -->
+            <div id="results-panel" class="hidden space-y-4">
+                <div class="text-center border-b border-slate-800 pb-2">
+                    <h2 id="final-title" class="font-headline text-3xl text-amber-400">FIN DU SPECTACLE !</h2>
+                    <p class="text-xs text-slate-400">Le rideau tombe. Voici le verdict de la soirée !</p>
+                </div>
+
+                <!-- Overall Note /10 -->
+                <div class="flex flex-col items-center justify-center bg-slate-950 p-4 rounded-2xl border border-amber-500/40 relative overflow-hidden">
+                    <div class="absolute -right-6 -bottom-6 w-24 h-24 bg-amber-500/10 rounded-full blur-xl"></div>
+                    <span class="text-xs uppercase text-slate-400 font-bold tracking-widest mb-1">Note de la Représentation</span>
+                    <div class="flex items-baseline space-x-1">
+                        <span id="score-final" class="font-headline text-6xl text-amber-400">0.0</span>
+                        <span class="text-slate-500 text-2xl font-bold">/10</span>
+                    </div>
+                    <p id="score-verdict" class="text-sm font-semibold text-rose-300 mt-1">"Une performance légendaire !"</p>
+                </div>
+
+                <!-- Detailed Ratings Breakdown -->
+                <div class="grid grid-cols-3 gap-2 text-xs">
+                    <div class="bg-slate-950 p-2.5 rounded-xl border border-slate-800 text-center">
+                        <span class="text-slate-400 block mb-1">⏱️ Rythme</span>
+                        <span id="score-rythme" class="font-bold text-amber-300 text-sm">0.0/3.0</span>
+                    </div>
+
+                    <div class="bg-slate-950 p-2.5 rounded-xl border border-slate-800 text-center">
+                        <span class="text-slate-400 block mb-1">😂 Humour</span>
+                        <span id="score-humour" class="font-bold text-rose-400 text-sm">0.0/4.0</span>
+                    </div>
+
+                    <div class="bg-slate-950 p-2.5 rounded-xl border border-slate-800 text-center">
+                        <span class="text-slate-400 block mb-1">👏 Public</span>
+                        <span id="score-public" class="font-bold text-cyan-300 text-sm">0.0/3.0</span>
+                    </div>
+                </div>
+
+                <!-- Press Review Review Diploma -->
+                <div class="bg-rose-950/30 border border-rose-500/30 p-3.5 rounded-xl">
+                    <span class="text-xs text-amber-300 font-bold block mb-1">📰 La Gazette du Rire :</span>
+                    <p id="press-review" class="text-xs italic text-slate-300 leading-relaxed">
+                        "Un showman survolté qui a su charmer la salle dès les premières secondes..."
+                    </p>
+                </div>
+
+                <!-- Restart Button -->
+                <button onclick="resetGameToSetup()" 
+                        class="w-full py-3.5 rounded-2xl bg-gradient-to-r from-slate-800 to-slate-700 hover:from-slate-700 hover:to-slate-600 text-white font-headline tracking-wider text-lg transition-all shadow-lg">
+                    REVENIR EN COULISSES & NOUVEAU SHOW
+                </button>
+            </div>
+
+        </div>
+    </main>
+
+    <!-- Web Audio API Sound Effects Synthesizer Engine -->
+    <script>
+        class ShowmanAudioEngine {
+            constructor() {
+                this.ctx = null;
+            }
+
+            init() {
+                if (!this.ctx) {
+                    this.ctx = new (window.AudioContext || window.webkitAudioContext)();
+                }
+            }
+
+            // Synthesize crowd laughs
+            playLaughs() {
+                this.init();
+                if (!this.ctx) return;
+
+                const now = this.ctx.currentTime;
+                const duration = 1.2;
+
+                // Multiple overlapping giggle frequencies
+                for (let i = 0; i < 8; i++) {
+                    const osc = this.ctx.createOscillator();
+                    const gain = this.ctx.createGain();
+
+                    osc.type = i % 2 === 0 ? 'sine' : 'triangle';
+                    const baseFreq = 220 + Math.random() * 220;
+                    
+                    osc.frequency.setValueAtTime(baseFreq, now + i * 0.1);
+                    osc.frequency.exponentialRampToValueAtTime(baseFreq * 0.6, now + i * 0.1 + 0.12);
+
+                    gain.gain.setValueAtTime(0.06, now + i * 0.1);
+                    gain.gain.exponentialRampToValueAtTime(0.001, now + i * 0.1 + 0.12);
+
+                    osc.connect(gain);
+                    gain.connect(this.ctx.destination);
+
+                    osc.start(now + i * 0.1);
+                    osc.stop(now + i * 0.1 + 0.13);
+                }
+            }
+
+            // Synthesize Rimshot (Ba-Dum-Tss)
+            playRimshot() {
+                this.init();
+                if (!this.ctx) return;
+
+                const now = this.ctx.currentTime;
+
+                // First Drum hit (Ba)
+                const osc1 = this.ctx.createOscillator();
+                const gain1 = this.ctx.createGain();
+                osc1.frequency.setValueAtTime(140, now);
+                osc1.frequency.exponentialRampToValueAtTime(35, now + 0.08);
+                gain1.gain.setValueAtTime(0.3, now);
+                gain1.gain.exponentialRampToValueAtTime(0.001, now + 0.08);
+                osc1.connect(gain1);
+                gain1.connect(this.ctx.destination);
+                osc1.start(now);
+                osc1.stop(now + 0.09);
+
+                // Second Drum hit (Dum)
+                const osc2 = this.ctx.createOscillator();
+                const gain2 = this.ctx.createGain();
+                osc2.frequency.setValueAtTime(110, now + 0.12);
+                osc2.frequency.exponentialRampToValueAtTime(30, now + 0.2);
+                gain2.gain.setValueAtTime(0.3, now + 0.12);
+                gain2.gain.exponentialRampToValueAtTime(0.001, now + 0.2);
+                osc2.connect(gain2);
+                gain2.connect(this.ctx.destination);
+                osc2.start(now + 0.12);
+                osc2.stop(now + 0.21);
+
+                // Cymbal Crash (Tss)
+                const bufferSize = this.ctx.sampleRate * 0.35;
+                const buffer = this.ctx.createBuffer(1, bufferSize, this.ctx.sampleRate);
+                const data = buffer.getChannelData(0);
+                for (let i = 0; i < bufferSize; i++) {
+                    data[i] = Math.random() * 2 - 1;
+                }
+                const noise = this.ctx.createBufferSource();
+                noise.buffer = buffer;
+
+                const filter = this.ctx.createBiquadFilter();
+                filter.type = 'highpass';
+                filter.frequency.value = 6000;
+
+                const gainNoise = this.ctx.createGain();
+                gainNoise.gain.setValueAtTime(0.2, now + 0.24);
+                gainNoise.gain.exponentialRampToValueAtTime(0.001, now + 0.58);
+
+                noise.connect(filter);
+                filter.connect(gainNoise);
+                gainNoise.connect(this.ctx.destination);
+
+                noise.start(now + 0.24);
+                noise.stop(now + 0.59);
+            }
+
+            // Synthesize Boos / Disappointment noise
+            playBoo() {
+                this.init();
+                if (!this.ctx) return;
+                const now = this.ctx.currentTime;
+                
+                const osc = this.ctx.createOscillator();
+                const gain = this.ctx.createGain();
+                
+                osc.type = 'sawtooth';
+                osc.frequency.setValueAtTime(110, now);
+                osc.frequency.linearRampToValueAtTime(80, now + 0.8);
+
+                gain.gain.setValueAtTime(0.08, now);
+                gain.gain.exponentialRampToValueAtTime(0.001, now + 0.8);
+
+                osc.connect(gain);
+                gain.connect(this.ctx.destination);
+                osc.start(now);
+                osc.stop(now + 0.81);
+            }
+        }
+
+        const audioSynth = new ShowmanAudioEngine();
+    </script>
+
+    <!-- Game State & AI Comedy Engine Logic -->
+    <script>
+        // State
+        const gameState = {
+            totalShows: 0,
+            bestScore: 0.0,
+            totalLaughs: 0,
+            currentJokes: [],
+            currentJokeIndex: 0,
+            showScores: [],
+            currentSelectedDelivery: null
+        };
+
+        // Rich fallback database of jokes organized by theme
+        const fallbackJokeDatabase = {
+            "L'Intelligence Artificielle et le Futur": [
+                { setup: "J'ai installé une IA pour gérer mon frigo intelligent.", punchline: "Maintenant, elle me refuse le fromage à 23h parce que 'mon profil comportemental ne le recommande pas' !", reaction: "😂 TROP VRAI !", score: 8.8 },
+                { setup: "On a peur que l'IA remplace les humains au travail.", punchline: "Moi ma cafetière connectée plante dès qu'il y a une mise à jour. Les machines ont déjà appris la flemme !", reaction: "HAHAHA !", score: 8.2 },
+                { setup: "J'ai demandé à ChatGPT le secret du bonheur.", punchline: "Il m'a répondu : 'Veuillez vous déconnecter d'Internet'. Même l'IA sait qu'on est tous fous !", reaction: "🤣 EXCELLENT !", score: 9.1 }
+            ],
+            "Les Rendez-vous Amoureux et Tinder": [
+                { setup: "Les rendez-vous Tinder aujourd'hui c'est de l'archéologie.", punchline: "On essaie de deviner si la personne en face ressemble à sa photo d'il y a 5 ans ou si c'est son cousin !", reaction: "😭 TELLEMENT !", score: 8.5 },
+                { setup: "Un profil disait : 'Je cherche quelqu'un de spontané et sportif'.", punchline: "Je suis spontanément parti manger un kebab sur mon canapé.", reaction: "😂 MOURIR DE RIRE !", score: 8.7 },
+                { setup: "Mon dernier date m'a demandé quel était mon plus grand rêve dans la vie.", punchline: "J'ai répondu 'Que mon plat surgelé cuise uniformément au micro-ondes'. Elle est partie.", reaction: "👏 BRAVO !", score: 8.0 }
+            ],
+            "Le Télétravail et les Réunions Zoom": [
+                { setup: "Le télétravail c'est extraordinaire pour la garde-robe.", punchline: "Chemise cravate en haut, caleçon pyjama en bas. Le look 'PDG de la taille aux épaules' !", reaction: "🤣 EXACTEMENT !", score: 9.0 },
+                { setup: "En réunion Zoom, il y a toujours quelqu'un qui oublie de couper son micro.", punchline: "Et on entend toute sa vie : le chien qui aboie, la soupe qui bout et ses réflexions sur le patron !", reaction: "😂 TROP BON !", score: 8.6 },
+                { setup: "On nous dit 'Vous êtes en muet, coupez votre micro'.", punchline: "Moi je devrais couper ma caméra toute la semaine tellement ma tête fait peur le lundi !", reaction: "👏 TROP VRAI !", score: 8.3 }
+            ]
+        };
+
+        // Load persisted stats
+        function loadStats() {
+            const shows = localStorage.getItem('showman_shows');
+            const best = localStorage.getItem('showman_best');
+            const laughs = localStorage.getItem('showman_laughs');
+
+            if (shows) gameState.totalShows = parseInt(shows, 10);
+            if (best) gameState.bestScore = parseFloat(best);
+            if (laughs) gameState.totalLaughs = parseInt(laughs, 10);
+
+            updateStatsHeader();
+        }
+
+        function updateStatsHeader() {
+            document.getElementById('stat-shows').textContent = gameState.totalShows;
+            document.getElementById('stat-best').textContent = gameState.bestScore.toFixed(1) + "/10";
+            document.getElementById('stat-laughs').textContent = gameState.totalLaughs;
+        }
+
+        // Call Gemini API to generate custom comedy script
+        async function generateJokesWithGemini(theme, style, attitude, customDetail) {
+            const apiKey = ""; // Canvas runtime key
+            const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`;
+
+            const prompt = `Tu es un showman comédien de stand-up professionnel. Génère un sketch de 3 vannes percutantes en français.
+            Thème : "${theme}". Style : "${style}". Attitude : "${attitude}". ${customDetail ? 'Détail : ' + customDetail : ''}.
+
+            Format de réponse JSON STRICT attendu :
+            {
+              "jokes": [
+                {
+                  "setup": "Introduction ou mise en situation de la vanne",
+                  "punchline": "La chute drôle et percutante",
+                  "reaction": "L'exclamation de réaction du public (ex: '😂 TROP VRAI !')",
+                  "score": 8.5
+                }
+              ],
+              "pressReview": "Une critique de presse hilarante d'une ligne sur la prestation"
+            }`;
+
+            try {
+                const response = await fetch(apiUrl, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        contents: [{ parts: [{ text: "Génère le sketch de stand-up." }] }],
+                        systemInstruction: { parts: [{ text: prompt }] },
+                        generationConfig: { responseMimeType: "application/json" }
+                    })
+                });
+
+                if (!response.ok) throw new Error("API Network issue");
+                const data = await response.json();
+                const jsonText = data.candidates?.[0]?.content?.parts?.[0]?.text;
+                if (!jsonText) throw new Error("Empty json");
+
+                return JSON.parse(jsonText);
+            } catch (err) {
+                console.warn("Utilisation du moteur de secours de comédie :", err);
+                const category = fallbackJokeDatabase[theme] || fallbackJokeDatabase["L'Intelligence Artificielle et le Futur"];
+                return {
+                    jokes: category,
+                    pressReview: "Une présence scénique remarquable et des punchlines bien rodées qui ont conquis la salle !"
+                };
+            }
+        }
+
+        // Start Show Action
+        async function startShowmanPerformance() {
+            const theme = document.getElementById('select-theme').value;
+            const style = document.getElementById('select-style').value;
+            const attitude = document.getElementById('select-attitude').value;
+            const customDetail = document.getElementById('input-custom').value.trim();
+
+            // Toggle UI panels
+            document.getElementById('setup-panel').classList.add('hidden');
+            document.getElementById('performance-panel').classList.remove('hidden');
+            document.getElementById('results-panel').classList.add('hidden');
+
+            document.getElementById('typing-indicator').classList.remove('hidden');
+            document.getElementById('prompter-text').textContent = "Le Showman fait son entrée sous les projecteurs...";
+
+            gameState.currentJokeIndex = 0;
+            gameState.showScores = [];
+
+            // Fetch jokes
+            const script = await generateJokesWithGemini(theme, style, attitude, customDetail);
+            gameState.currentJokes = script.jokes || fallbackJokeDatabase["L'Intelligence Artificielle et le Futur"];
+            gameState.pressReview = script.pressReview || "Un spectacle hilarant et énergique !";
+
+            document.getElementById('typing-indicator').classList.add('hidden');
+            
+            // Present first setup
+            showCurrentJokeSetup();
+        }
+
+        // Show joke setup
+        function showCurrentJokeSetup() {
+            const joke = gameState.currentJokes[gameState.currentJokeIndex];
+            document.getElementById('joke-counter').textContent = `Vanne ${gameState.currentJokeIndex + 1} / ${gameState.currentJokes.length}`;
+            
+            // Animate Prompter
+            const textEl = document.getElementById('prompter-text');
+            textEl.textContent = `"${joke.setup}"`;
+
+            // Reset meter bar
+            document.getElementById('laugh-meter-bar').style.width = '30%';
+            document.getElementById('laugh-meter-text').textContent = "Attente de la chute...";
+
+            // Reset delivery choices
+            document.getElementById('btn-next-step').disabled = true;
+            document.getElementById('delivery-choices-container').classList.remove('opacity-50', 'pointer-events-none');
+        }
+
+        // Deliver punchline with chosen style
+        function deliverPunchline(deliveryType) {
+            const joke = gameState.currentJokes[gameState.currentJokeIndex];
+            const textEl = document.getElementById('prompter-text');
+
+            // Disable delivery choice buttons
+            document.getElementById('delivery-choices-container').classList.add('opacity-50', 'pointer-events-none');
+
+            // Delivery visual variations
+            let bonusMultiplier = 1.0;
+            if (deliveryType === 'cash') {
+                textEl.textContent = `"${joke.setup} ... ${joke.punchline.toUpperCase()} !"`;
+                bonusMultiplier = 1.1;
+            } else if (deliveryType === 'pause') {
+                textEl.textContent = `"${joke.setup} ... (regard complice) ... ${joke.punchline}"`;
+                bonusMultiplier = 1.25;
+            } else {
+                textEl.textContent = `"${joke.setup} ! Eh oui ! ${joke.punchline}"`;
+                bonusMultiplier = 1.15;
+            }
+
+            // Calculate joke impact score
+            const calculatedScore = Math.min(10, (joke.score || 8.0) * bonusMultiplier);
+            gameState.showScores.push(calculatedScore);
+            gameState.totalLaughs += Math.floor(calculatedScore * 2);
+
+            // Update Laugh Meter
+            const meterPct = Math.min(100, calculatedScore * 10);
+            document.getElementById('laugh-meter-bar').style.width = `${meterPct}%`;
+            document.getElementById('laugh-meter-text').textContent = `Rires à ${Math.round(meterPct)}% !`;
+
+            // Audio & Visual Effects
+            audioSynth.playLaughs();
+            audioSynth.playRimshot();
+            triggerAudienceVisuals(joke.reaction || "HAHAHA !");
+
+            // Enable Next button
+            document.getElementById('btn-next-step').disabled = false;
+        }
+
+        function triggerAudienceVisuals(reactionText) {
+            // Animate Showman avatar smile
+            const mouth = document.getElementById('showman-mouth');
+            mouth.setAttribute('d', 'M39 42 Q50 58 61 42');
+            setTimeout(() => {
+                mouth.setAttribute('d', 'M41 44 Q50 52 59 44');
+            }, 1800);
+
+            // Spawn floating text bubble
+            const container = document.getElementById('reactions-container');
+            const bubble = document.createElement('div');
+            
+            const randomX = Math.floor(Math.random() * 60) + 20; // %
+            
+            bubble.className = "absolute font-headline text-lg sm:text-2xl text-amber-300 bg-rose-600/90 px-4 py-1.5 rounded-full border-2 border-amber-300 shadow-2xl animate-float-up z-40";
+            bubble.style.left = `${randomX}%`;
+            bubble.style.bottom = "30px";
+            bubble.textContent = reactionText;
+
+            container.appendChild(bubble);
+
+            setTimeout(() => {
+                if (bubble.parentNode) bubble.parentNode.removeChild(bubble);
+            }, 2200);
+        }
+
+        function proceedToNextJoke() {
+            gameState.currentJokeIndex++;
+            if (gameState.currentJokeIndex < gameState.currentJokes.length) {
+                showCurrentJokeSetup();
+            } else {
+                finishShowmanPerformance();
+            }
+        }
+
+        // Final Score Calculation
+        function finishShowmanPerformance() {
+            gameState.totalShows++;
+
+            // Detailed Scores out of 10
+            const avgImpact = gameState.showScores.reduce((a, b) => a + b, 0) / gameState.showScores.length;
+            
+            const rhythmScore = (Math.random() * 0.4 + 2.5).toFixed(1); // /3.0
+            const humorScore = ((avgImpact / 10) * 4.0).toFixed(1); // /4.0
+            const audienceScore = (Math.random() * 0.5 + 2.4).toFixed(1); // /3.0
+
+            const totalScore = (parseFloat(rhythmScore) + parseFloat(humorScore) + parseFloat(audienceScore)).toFixed(1);
+
+            if (parseFloat(totalScore) > gameState.bestScore) {
+                gameState.bestScore = parseFloat(totalScore);
+            }
+
+            // Save to LocalStorage
+            localStorage.setItem('showman_shows', gameState.totalShows);
+            localStorage.setItem('showman_best', gameState.bestScore);
+            localStorage.setItem('showman_laughs', gameState.totalLaughs);
+            updateStatsHeader();
+
+            // Display Results Panel
+            document.getElementById('performance-panel').classList.add('hidden');
+            document.getElementById('results-panel').classList.remove('hidden');
+
+            document.getElementById('score-final').textContent = totalScore;
+            document.getElementById('score-rythme').textContent = `${rhythmScore}/3.0`;
+            document.getElementById('score-humour').textContent = `${humorScore}/4.0`;
+            document.getElementById('score-public').textContent = `${audienceScore}/3.0`;
+            document.getElementById('press-review').textContent = `"${gameState.pressReview}"`;
+
+            const verdictEl = document.getElementById('score-verdict');
+            if (parseFloat(totalScore) >= 8.5) {
+                verdictEl.textContent = "🏆 STANDING OVATION ! Le public est conquis !";
+                confetti({ particleCount: 100, spread: 80, origin: { y: 0.6 } });
+            } else if (parseFloat(totalScore) >= 7.0) {
+                verdictEl.textContent = "👏 Très beau show ! De grands éclats de rire.";
+            } else {
+                verdictEl.textContent = "😅 Pas mal ! Quelques réglages de timing à prévoir.";
+            }
+        }
+
+        function resetGameToSetup() {
+            document.getElementById('results-panel').classList.add('hidden');
+            document.getElementById('setup-panel').classList.remove('hidden');
+            document.getElementById('prompter-text').textContent = "Bienvenue au Comedy Club ! Configurez votre style et votre thème puis montez sur scène !";
+        }
+
+        // Initialize on window load
+        window.onload = function() {
+            loadStats();
+        };
+    </script>
+</body>
+</html>
 <!DOCTYPE html>
 <html lang="fr">
 <head>
