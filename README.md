@@ -2,48 +2,63 @@
 
 🎭 JEU DE SPECTACLE IA
 THE SHOW MAN
-🎤🕴️
-👀👀👀
-Lis l’histoire puis lance la prestation !
-Un robot entre dans un café et demande : « Vous avez du Wi-Fi ? » Le serveur répond : « Oui. » Le robot dit : « Parfait, alors je vais prendre un mot de passe. »
-NOTE DU PUBLIC
-— / 10
-0 spectateur
+🎤
+# 🎤 THE SHOW MAN
 
-# Architecture technique
+Jeu vidéo de comédie utilisant l'intelligence artificielle.
 
-Frontend jeu : Godot 4.
-Backend : API REST/HTTPS.
-Auth : compte email/social.
-Données : profil, progression, scores, inventaire.
-IA : génération de blagues/histoires avec prompts contrôlés.
-Modération : filtre avant affichage/publication.
-TTS : service vocal optionnel.
-Leaderboard : score quotidien, hebdomadaire et saison.
+## Fonctionnalités
 
-Boucle : Choisir thème -> Générer -> Répéter -> Jouer -> Réaction public -> Note 1-10 -> Récompense -> Déblocage -> Classement.
+- Spectacles générés par IA
+- Thèmes humoristiques
+- Réactions du public
+- Note de 1 à 10
+- XP
+- Niveaux
+- Pièces
+- Boutique
+- Costumes
+- Scènes
+- Classement
 
-Publications — THE SHOW MAN
+## Installation
 
-## TikTok / Instagram Reels
-🎤 THE SHOW MAN arrive !
-Tu montes sur scène, une IA te prépare une histoire, tu la joues… et le public te note de 1 à 10 😂
+Installer Node.js.
 
-Tu penses pouvoir atteindre 10/10 ?
-#TheShowMan #AIGame #ComedyGame #Gaming #IA
+Puis :
 
-## YouTube
-Titre : THE SHOW MAN — Le jeu où l'IA écrit tes blagues et le public te note !
+npm install
 
-Description : Monte sur scène, choisis ton style, fais rire ton public et tente d'obtenir la meilleure note. Développe ton personnage, gagne des récompenses et grimpe dans les classements.
+Créer un fichier `.env` :
 
-## Facebook / X
-🎤 THE SHOW MAN — un nouveau jeu de comédie alimenté par l'IA.
-Une histoire. Une scène. Un public. Une note de 1 à 10.
-Qui réussira le 10/10 ?
+OPENAI_API_KEY=ta_cle_api
+OPENAI_MODEL=gpt-5-mini
 
-THE SHOW MAN
+Puis lancer :
 
+npm start
+
+Le jeu sera disponible sur :
+
+http://localhost:3000
+
+## Structure
+
+the-show-man/
+│
+├── package.json
+├── server.js
+├── .env
+├── .env.example
+├── README.md
+│
+└── public/
+    └── index.html
+
+## Important
+
+La clé API ne doit jamais être placée
+dans index.html ni publiée sur GitHub.
 Jeu de comédie multiplateforme : le joueur incarne un artiste, reçoit des histoires générées par IA, les interprète devant un public virtuel et reçoit une note de 1 à 10.
 
 ## Tester maintenant
