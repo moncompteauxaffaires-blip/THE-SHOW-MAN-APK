@@ -1,5 +1,15 @@
 # THE-SHOW-MAN
 
+🎭 JEU DE SPECTACLE IA
+THE SHOW MAN
+🎤🕴️
+👀👀👀
+Lis l’histoire puis lance la prestation !
+Un robot entre dans un café et demande : « Vous avez du Wi-Fi ? » Le serveur répond : « Oui. » Le robot dit : « Parfait, alors je vais prendre un mot de passe. »
+NOTE DU PUBLIC
+— / 10
+0 spectateur
+
 # Architecture technique
 
 Frontend jeu : Godot 4.
